@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.net.URI;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -51,6 +52,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public abstract class GossipManager {
@@ -85,10 +87,14 @@ public abstract class GossipManager {
   private final MessageHandler messageHandler;
   private final LockManager lockManager;
 
+  private Predicate<String> authenticator;
+
   public GossipManager(String cluster,
                        URI uri, String id, Map<String, String> properties, GossipSettings settings,
                        List<Member> gossipMembers, GossipListener listener, MetricRegistry registry,
                        MessageHandler messageHandler) {
+	LOGGER.debug("GossipManager creation...");
+	  
     this.settings = settings;
     this.messageHandler = messageHandler;
 
@@ -122,6 +128,14 @@ public abstract class GossipManager {
     readSavedDataState();
   }
 
+  public GossipManager(String cluster,
+          URI uri, String id, Map<String, String> properties, GossipSettings settings,
+          List<Member> gossipMembers, GossipListener listener, MetricRegistry registry,
+          MessageHandler messageHandler, Predicate<String> authenticator) {
+	  this(cluster, uri, id, properties, settings, gossipMembers, listener, registry, messageHandler);
+	  this.authenticator = authenticator;
+  }
+  
   public MessageHandler getMessageHandler() {
     return messageHandler;
   }
@@ -138,6 +152,7 @@ public abstract class GossipManager {
    * @return a read only list of members found in the DOWN state.
    */
   public List<LocalMember> getDeadMembers() {
+	removeUnauthenticatedMembers();
     return Collections.unmodifiableList(
             members.entrySet()
                     .stream()
@@ -145,7 +160,20 @@ public abstract class GossipManager {
                     .map(Entry::getKey).collect(Collectors.toList()));
   }
 
-  /**
+  private void removeUnauthenticatedMembers() {
+	if (authenticator == null) {
+		return;
+	}
+	for (Iterator<LocalMember> iterator = members.keySet().iterator(); iterator.hasNext();) {
+		LocalMember m = iterator.next();
+		if (!authenticator.test(m.getId())) {
+			LOGGER.info(String.format("removing unauthenticated [%s] from member list", m));
+			iterator.remove();
+		}
+	}
+  }
+
+/**
    *
    * @return a read only list of members found in the UP state
    */
@@ -198,6 +226,7 @@ public abstract class GossipManager {
   }
   
   private void readSavedRingState() {
+    LOGGER.debug("readSavedRingState");
     if (settings.isPersistRingState()) {
       for (LocalMember l : ringState.readFromDisk()) {
         LocalMember member = new LocalMember(l.getClusterName(),
@@ -210,6 +239,7 @@ public abstract class GossipManager {
   }
 
   private void readSavedDataState() {
+    LOGGER.debug("readSavedDataState");
     if (settings.isPersistDataState()) {
       for (Entry<String, ConcurrentHashMap<String, PerNodeDataMessage>> l : userDataState.readPerNodeFromDisk().entrySet()) {
         for (Entry<String, PerNodeDataMessage> j : l.getValue().entrySet()) {
@@ -219,6 +249,7 @@ public abstract class GossipManager {
     }
     if (settings.isPersistRingState()) {
       for (Entry<String, SharedDataMessage> l : userDataState.readSharedDataFromDisk().entrySet()) {
+   	    LOGGER.debug(String.format("readSavedDataState addSharedData %s", l.getValue()));
         gossipCore.addSharedData(l.getValue());
       }
     }
@@ -397,4 +428,12 @@ public abstract class GossipManager {
   public void acquireSharedDataLock(String key) throws VoteFailedException{
     lockManager.acquireSharedDataLock(key);
   }
+  
+  public ConcurrentHashMap<String, SharedDataMessage> getSharedData() {
+	  return gossipCore.getSharedData();
+  }
+
+	public Predicate<String> getAuthenticator() {
+		return authenticator;
+	}
 }

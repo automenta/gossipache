@@ -52,7 +52,7 @@ public class UserDataPersister implements Runnable {
     try (FileInputStream fos = new FileInputStream(perNodePath)){
       return objectMapper.readValue(fos, ConcurrentHashMap.class);
     } catch (IOException e) {
-      LOGGER.debug(e);
+      LOGGER.warn(e);
     }
     return new ConcurrentHashMap<String, ConcurrentHashMap<String, PerNodeDataMessage>>();
   }
@@ -67,6 +67,7 @@ public class UserDataPersister implements Runnable {
   
   void writeSharedToDisk(){
     try (FileOutputStream fos = new FileOutputStream(sharedPath)){
+   	  LOGGER.info(String.format("writeSharedToDisk from path = %s", sharedPath));
       objectMapper.writeValue(fos, gossipCore.getSharedData());
     } catch (IOException e) {
       LOGGER.warn(e);
@@ -75,13 +76,14 @@ public class UserDataPersister implements Runnable {
 
   @SuppressWarnings("unchecked")
   ConcurrentHashMap<String, SharedDataMessage> readSharedDataFromDisk(){
+	LOGGER.info(String.format("readSharedDataFromDisk from path = %s", sharedPath));
     if (!sharedPath.exists()) {
       return new ConcurrentHashMap<>();
     }
     try (FileInputStream fos = new FileInputStream(sharedPath)){
       return objectMapper.readValue(fos, ConcurrentHashMap.class);
     } catch (IOException e) {
-      LOGGER.debug(e);
+      LOGGER.warn(e);
     }
     return new ConcurrentHashMap<String, SharedDataMessage>();
   }

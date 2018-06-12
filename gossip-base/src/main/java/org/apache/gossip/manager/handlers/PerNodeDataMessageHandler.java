@@ -17,12 +17,23 @@
  */
 package org.apache.gossip.manager.handlers;
 
+import java.util.function.Predicate;
+
 import org.apache.gossip.manager.GossipCore;
 import org.apache.gossip.manager.GossipManager;
 import org.apache.gossip.model.Base;
 import org.apache.gossip.udp.UdpPerNodeDataMessage;
 
 public class PerNodeDataMessageHandler implements MessageHandler {
+
+	private Predicate<String> authenticator;
+
+	public PerNodeDataMessageHandler() {
+	}
+
+	public PerNodeDataMessageHandler(Predicate<String> authenticator) {
+		this.authenticator = authenticator;
+	}
 
   /**
    * @param gossipCore context.
@@ -33,6 +44,11 @@ public class PerNodeDataMessageHandler implements MessageHandler {
   @Override
   public boolean invoke(GossipCore gossipCore, GossipManager gossipManager, Base base) {
     UdpPerNodeDataMessage message = (UdpPerNodeDataMessage) base;
+    if (authenticator != null) {
+    	if (!authenticator.test(message.getUriFrom())) {
+        	return false;
+	    }
+    }
     gossipCore.addPerNodeData(message);
     return true;
   }
