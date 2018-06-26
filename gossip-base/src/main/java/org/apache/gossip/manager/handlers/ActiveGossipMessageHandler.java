@@ -30,9 +30,19 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class ActiveGossipMessageHandler implements MessageHandler {
   
+	private Predicate<String> authenticator;
+
+	public ActiveGossipMessageHandler() {
+	}
+	
+	public ActiveGossipMessageHandler(Predicate<String> authenticator) {
+		this.authenticator = authenticator;
+	}
+	
   /**
    * @param gossipCore context.
    * @param gossipManager context.
@@ -44,6 +54,11 @@ public class ActiveGossipMessageHandler implements MessageHandler {
     List<Member> remoteGossipMembers = new ArrayList<>();
     RemoteMember senderMember = null;
     UdpActiveGossipMessage activeGossipMessage = (UdpActiveGossipMessage) base;
+    // XXX here, activeGossipMessage.getUriFrom() is an URI, not an ID. So this would not be correct:
+//    if (authenticator != null && !authenticator.test(activeGossipMessage.getUriFrom())) {
+//        GossipCore.LOGGER.debug(String.format("Not authenticated sender %s, discarding received message", activeGossipMessage.getUriFrom()));
+//    	return false;
+//    }
     for (int i = 0; i < activeGossipMessage.getMembers().size(); i++) {
       URI u;
       try {
@@ -69,6 +84,16 @@ public class ActiveGossipMessageHandler implements MessageHandler {
         GossipCore.LOGGER.warn(f);
         gossipCore.sendOneWay(f, member.getUri());
         continue;
+      }
+      if (authenticator != null && !authenticator.test(member.getId())) {
+          GossipCore.LOGGER.debug(String.format("Not authenticated %s coming from %s", member.getUri(), activeGossipMessage.getUriFrom()));
+//          UdpNotAMemberFault f = new UdpNotAMemberFault();
+//          f.setException(String.format("Not authenticated %s coming from %s", member.getUri(), activeGossipMessage.getUriFrom()));
+//          f.setUriFrom(activeGossipMessage.getUriFrom());
+//          f.setUuid(activeGossipMessage.getUuid());
+//          GossipCore.LOGGER.warn(f);
+//          gossipCore.sendOneWay(f, member.getUri());
+          continue;
       }
       remoteGossipMembers.add(member);
     }

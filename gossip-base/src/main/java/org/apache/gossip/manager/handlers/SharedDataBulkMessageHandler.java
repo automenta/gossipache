@@ -17,6 +17,8 @@
  */
 package org.apache.gossip.manager.handlers;
 
+import java.util.function.Predicate;
+
 import org.apache.gossip.manager.GossipCore;
 import org.apache.gossip.manager.GossipManager;
 import org.apache.gossip.model.Base;
@@ -25,7 +27,16 @@ import org.apache.gossip.udp.UdpSharedDataBulkMessage;
 
 public class SharedDataBulkMessageHandler implements MessageHandler{
   
-  /**
+	private Predicate<String> authenticator;
+
+	public SharedDataBulkMessageHandler() {
+	}
+
+	public SharedDataBulkMessageHandler(Predicate<String> authenticator) {
+		this.authenticator = authenticator;
+	}
+
+/**
    * @param gossipCore context.
    * @param gossipManager context.
    * @param base message reference.
@@ -34,8 +45,15 @@ public class SharedDataBulkMessageHandler implements MessageHandler{
   @Override
   public boolean invoke(GossipCore gossipCore, GossipManager gossipManager, Base base) {
     UdpSharedDataBulkMessage udpMessage = (UdpSharedDataBulkMessage) base;
+    if (authenticator != null && !authenticate(udpMessage)) {
+    	return false;
+    }
     for (SharedDataMessage dataMsg: udpMessage.getMessages())
       gossipCore.addSharedData(dataMsg);
     return true;
+  }
+
+  private boolean authenticate(UdpSharedDataBulkMessage message) {
+	  return authenticator.test(message.getUriFrom());
   }
 }

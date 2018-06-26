@@ -18,11 +18,19 @@
 
 package org.apache.gossip.manager.handlers;
 
+import java.util.Arrays;
+import java.util.function.Predicate;
+
 import org.apache.gossip.manager.GossipCore;
 import org.apache.gossip.manager.GossipManager;
-import org.apache.gossip.model.*;
-
-import java.util.Arrays;
+import org.apache.gossip.model.ActiveGossipMessage;
+import org.apache.gossip.model.Base;
+import org.apache.gossip.model.PerNodeDataBulkMessage;
+import org.apache.gossip.model.PerNodeDataMessage;
+import org.apache.gossip.model.Response;
+import org.apache.gossip.model.SharedDataBulkMessage;
+import org.apache.gossip.model.SharedDataMessage;
+import org.apache.gossip.model.ShutdownMessage;
 
 public class MessageHandlerFactory {
 
@@ -37,6 +45,18 @@ public class MessageHandlerFactory {
         new TypedMessageHandler(SharedDataBulkMessage.class, new SharedDataBulkMessageHandler())
     );
   }
+
+  public static MessageHandler defaultHandler(Predicate<String> authenticator) {
+	    return concurrentHandler(
+	        new TypedMessageHandler(Response.class, new ResponseHandler()),
+	        new TypedMessageHandler(ShutdownMessage.class, new ShutdownMessageHandler()),
+	        new TypedMessageHandler(PerNodeDataMessage.class, new PerNodeDataMessageHandler(authenticator)),
+	        new TypedMessageHandler(SharedDataMessage.class, new SharedDataMessageHandler(authenticator)),
+	        new TypedMessageHandler(ActiveGossipMessage.class, new ActiveGossipMessageHandler(authenticator)),
+	        new TypedMessageHandler(PerNodeDataBulkMessage.class, new PerNodeDataBulkMessageHandler(authenticator)),
+	        new TypedMessageHandler(SharedDataBulkMessage.class, new SharedDataBulkMessageHandler(authenticator))
+	    );
+	  }
 
   public static MessageHandler concurrentHandler(MessageHandler... handlers) {
     if (handlers == null)

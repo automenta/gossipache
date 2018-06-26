@@ -223,7 +223,11 @@ public abstract class AbstractActiveGossiper {
     message.setUuid(UUID.randomUUID().toString());
     message.getMembers().add(convert(me));
     for (LocalMember other : gossipManager.getMembers().keySet()) {
-      message.getMembers().add(convert(other));
+        if (gossipManager.getAuthenticator() != null && !gossipManager.getAuthenticator().test(other.getId())) {
+      	  // Member not authenticated, do not include in list to be sent
+        } else {
+        	message.getMembers().add(convert(other));
+        }
     }
     Response r = gossipCore.send(message, member.getUri());
     if (r instanceof ActiveGossipOk){

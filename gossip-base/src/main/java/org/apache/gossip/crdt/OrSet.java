@@ -17,15 +17,27 @@
  */
 package org.apache.gossip.crdt;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 
 import org.apache.gossip.crdt.OrSet.Builder.Operation;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /*
  * A immutable set 
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OrSet<E>  implements CrdtAddRemoveSet<E, Set<E>, OrSet<E>> {
   
   private final Map<E, Set<UUID>> elements = new HashMap<>();
