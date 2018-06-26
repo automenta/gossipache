@@ -51,7 +51,7 @@
   <name>Gossip Parent</name>
   <groupId>org.apache.gossip</groupId>
 	<artifactId>gossip-parent</artifactId>
-	<version>0.1.3-incubating-orwell</version>
+	<version>0.1.4-incubating-orwell-SNAPSHOT</version>
 	
 	<packaging>pom</packaging>
 	
