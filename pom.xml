@@ -332,14 +332,4 @@
 		</profile>
 	</profiles>
 
-	<distributionManagement>
-		<repository>
-			<id>releases</id>
-			<url>http://54.36.52.140:8081/artifactory/libs-release-local</url>
-		</repository>
-		<snapshotRepository>
-			<id>snapshot</id>
-			<url>http://54.36.52.140:8081/artifactory/libs-snapshot-local</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>
