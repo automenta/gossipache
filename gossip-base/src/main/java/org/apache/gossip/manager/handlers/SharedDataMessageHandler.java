@@ -23,9 +23,12 @@ import org.apache.gossip.manager.GossipCore;
 import org.apache.gossip.manager.GossipManager;
 import org.apache.gossip.model.Base;
 import org.apache.gossip.udp.UdpSharedDataMessage;
+import org.apache.log4j.Logger;
 
 public class SharedDataMessageHandler implements MessageHandler{
   
+	public static final Logger LOGGER = Logger.getLogger(SharedDataMessageHandler.class);
+
 	private Predicate<String> authenticator;
 
 	public SharedDataMessageHandler() {
@@ -44,6 +47,13 @@ public class SharedDataMessageHandler implements MessageHandler{
   @Override
   public boolean invoke(GossipCore gossipCore, GossipManager gossipManager, Base base) {
     UdpSharedDataMessage message = (UdpSharedDataMessage) base;
+
+	// Only add if not yet expired
+	if (gossipManager.getClock().currentTimeMillis() > message.getExpireAt()) {
+		LOGGER.info(String.format("Discarding expired message %s", message));
+		return false;
+	}
+    
     if (authenticator != null) {
     	if (!authenticator.test(message.getUriFrom())) {
         	return false;

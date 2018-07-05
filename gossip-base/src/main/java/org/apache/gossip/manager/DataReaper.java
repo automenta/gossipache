@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.gossip.model.PerNodeDataMessage;
 import org.apache.gossip.model.SharedDataMessage;
+import org.apache.log4j.Logger;
 
 /**
  * We wish to periodically sweep user data and remove entries past their timestamp. This
@@ -39,6 +40,8 @@ public class DataReaper {
   private final ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
   private final Clock clock;
   
+  public final Logger log = Logger.getLogger(this.getClass());
+
   public DataReaper(GossipCore gossipCore, Clock clock){
     this.gossipCore = gossipCore;
     this.clock = clock;
@@ -52,12 +55,16 @@ public class DataReaper {
     scheduledExecutor.scheduleAtFixedRate(reapPerNodeData, 0, 5, TimeUnit.SECONDS);
   }
   
-  void runSharedOnce(){
+  public void runSharedOnce(){
+	log.debug("runSharedOnce");
+    log.debug(String.format("gossipCore.getSharedData().size() = %s", gossipCore.getSharedData().size()));
     for (Entry<String, SharedDataMessage> entry : gossipCore.getSharedData().entrySet()){
       if (entry.getValue().getExpireAt() < clock.currentTimeMillis()){
+        log.debug(String.format("removing %s", entry.getKey()));
         gossipCore.getSharedData().remove(entry.getKey(), entry.getValue());
       }
     }
+    log.debug(String.format("gossipCore.getSharedData().size() = %s", gossipCore.getSharedData().size()));
   }
   
   void runPerNodeOnce(){
