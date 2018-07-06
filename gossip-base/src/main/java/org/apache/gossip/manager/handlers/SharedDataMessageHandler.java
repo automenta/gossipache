@@ -50,7 +50,7 @@ public class SharedDataMessageHandler implements MessageHandler{
 
 	// Only add if not yet expired
 	if (gossipManager.getClock().currentTimeMillis() > message.getExpireAt()) {
-		LOGGER.info(String.format("Discarding expired message %s", message));
+		LOGGER.debug(String.format("Discarding expired message %s", message));
 		return false;
 	}
     
