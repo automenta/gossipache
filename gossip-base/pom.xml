@@ -37,8 +37,8 @@
 			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-math</groupId>
-			<artifactId>commons-math</artifactId>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
 			<version>${commons-math.version}</version>
 		</dependency> 
 		<dependency>

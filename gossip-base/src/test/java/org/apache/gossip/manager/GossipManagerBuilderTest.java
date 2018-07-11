@@ -24,13 +24,13 @@ import org.apache.gossip.LocalMember;
 import org.apache.gossip.manager.handlers.MessageHandler;
 import org.apache.gossip.manager.handlers.ResponseHandler;
 import org.apache.gossip.manager.handlers.TypedMessageHandler;
+import org.apache.gossip.model.Response;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
-import javax.xml.ws.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.expectThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @RunWith(JUnitPlatform.class)
 public class GossipManagerBuilderTest {
@@ -57,21 +57,21 @@ public class GossipManagerBuilderTest {
   
   @Test
   public void idShouldNotBeNull() {
-    expectThrows(IllegalArgumentException.class,() -> {
+    assertThrows(IllegalArgumentException.class,() -> {
         GossipManagerBuilder.newBuilder().cluster("aCluster").build();
     });
   }
 
   @Test
   public void clusterShouldNotBeNull() {
-      expectThrows(IllegalArgumentException.class,() -> {
+      assertThrows(IllegalArgumentException.class,() -> {
           GossipManagerBuilder.newBuilder().id("id").build();
       });
   }
 
   @Test
   public void settingsShouldNotBeNull() {
-      expectThrows(IllegalArgumentException.class,() -> {
+      assertThrows(IllegalArgumentException.class,() -> {
           GossipManagerBuilder.newBuilder().id("id").cluster("aCluster").build();
       });
   }
