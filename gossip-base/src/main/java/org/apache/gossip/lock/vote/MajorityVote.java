@@ -66,8 +66,8 @@ public class MajorityVote implements Crdt<Map<String, VoteCandidate>, MajorityVo
   }
 
   // Merge different votes for same candidate
-  private VoteCandidate mergeCandidate(VoteCandidate firstCandidate,
-          VoteCandidate secondCandidate) {
+  private static VoteCandidate mergeCandidate(VoteCandidate firstCandidate,
+                                              VoteCandidate secondCandidate) {
     VoteCandidate mergeResult = new VoteCandidate(firstCandidate.getCandidateNodeId(),
             firstCandidate.getVotingKey(), new ConcurrentHashMap<>());
     Set<String> firstKeySet = firstCandidate.getVotes().keySet();
@@ -98,7 +98,7 @@ public class MajorityVote implements Crdt<Map<String, VoteCandidate>, MajorityVo
   }
 
   // Merge two votes from same voter
-  private Vote mergeVote(Vote firstVote, Vote secondVote) {
+  private static Vote mergeVote(Vote firstVote, Vote secondVote) {
     if (firstVote.getVoteValue().booleanValue() != secondVote.getVoteValue().booleanValue()) {
       if (firstVote.getVoteExchange()) {
         return firstVote;
@@ -112,13 +112,13 @@ public class MajorityVote implements Crdt<Map<String, VoteCandidate>, MajorityVo
     }
   }
 
-  private Set<String> getIntersection(Set<String> first, Set<String> second) {
+  private static Set<String> getIntersection(Set<String> first, Set<String> second) {
     Set<String> intersection = new HashSet<>(first);
     intersection.retainAll(second);
     return intersection;
   }
 
-  private Set<String> getIntersectionCompliment(Set<String> first, Set<String> second) {
+  private static Set<String> getIntersectionCompliment(Set<String> first, Set<String> second) {
     Set<String> union = new HashSet<>();
     union.addAll(first);
     union.addAll(second);
@@ -129,8 +129,7 @@ public class MajorityVote implements Crdt<Map<String, VoteCandidate>, MajorityVo
 
   @Override
   public Map<String, VoteCandidate> value() {
-    Map<String, VoteCandidate> copy = new ConcurrentHashMap<>();
-    copy.putAll(voteCandidates);
+    Map<String, VoteCandidate> copy = new ConcurrentHashMap<>(voteCandidates);
     return Collections.unmodifiableMap(copy);
 
   }

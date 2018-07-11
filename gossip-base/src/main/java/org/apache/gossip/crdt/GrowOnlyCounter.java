@@ -93,7 +93,7 @@ public class GrowOnlyCounter implements CrdtCounter<Long, GrowOnlyCounter> {
   
   @Override
   public String toString() {
-    return "GrowOnlyCounter [counters= " + counters + ", Value=" + value() + "]";
+    return "GrowOnlyCounter [counters= " + counters + ", Value=" + value() + ']';
   }
   
   Map<String, Long> getCounters() {

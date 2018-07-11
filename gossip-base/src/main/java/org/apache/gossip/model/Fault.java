@@ -33,7 +33,7 @@ public abstract class Fault extends Response {
 
   @Override
   public String toString() {
-    return "Fault [exception=" + exception + "]";
+    return "Fault [exception=" + exception + ']';
   }
 
 }

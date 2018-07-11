@@ -56,8 +56,7 @@ public class GrowOnlySet<ElementType> implements CrdtSet<ElementType, Set<Elemen
 
   @Override
   public Set<ElementType> value() {
-    Set<ElementType> copy = new LinkedHashSet<>();
-    copy.addAll(hidden);
+    Set<ElementType> copy = new LinkedHashSet<>(hidden);
     return Collections.unmodifiableSet(copy);
   }
   
@@ -79,8 +78,7 @@ public class GrowOnlySet<ElementType> implements CrdtSet<ElementType, Set<Elemen
   }
 
   public Iterator<ElementType> iterator() {
-    Set<ElementType> copy = new HashSet<>();
-    copy.addAll(hidden);
+    Set<ElementType> copy = new HashSet<>(hidden);
     return copy.iterator();
   }
 
@@ -96,7 +94,7 @@ public class GrowOnlySet<ElementType> implements CrdtSet<ElementType, Set<Elemen
     throw new UnsupportedOperationException();
   }
 
-  public boolean remove(Object o) {
+  public static boolean remove(Object o) {
     throw new UnsupportedOperationException();
   }
 
@@ -108,21 +106,21 @@ public class GrowOnlySet<ElementType> implements CrdtSet<ElementType, Set<Elemen
     throw new UnsupportedOperationException();
   }
 
-  public boolean retainAll(Collection<?> c) {
+  public static boolean retainAll(Collection<?> c) {
     throw new UnsupportedOperationException();
   }
 
-  public boolean removeAll(Collection<?> c) {
+  public static boolean removeAll(Collection<?> c) {
     throw new UnsupportedOperationException();
   }
 
-  public void clear() {
+  public static void clear() {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public String toString() {
-    return "GrowOnlySet [hidden=" + hidden + "]";
+    return "GrowOnlySet [hidden=" + hidden + ']';
   }
 
   @Override
@@ -144,8 +142,7 @@ public class GrowOnlySet<ElementType> implements CrdtSet<ElementType, Set<Elemen
     @SuppressWarnings("rawtypes")
     GrowOnlySet other = (GrowOnlySet) obj;
     if (hidden == null) {
-      if (other.hidden != null)
-        return false;
+      return other.hidden == null;
     } else if (!hidden.equals(other.hidden))
       return false;
     return true;

@@ -52,9 +52,7 @@ public class TwoPhaseSet<ElementType> implements CrdtAddRemoveSet<ElementType, S
 
   public TwoPhaseSet(Set<ElementType> set){
     this();
-    for (ElementType e : set){
-      added.add(e);
-    }
+      added.addAll(set);
   }
 
   public TwoPhaseSet(TwoPhaseSet<ElementType> first, TwoPhaseSet<ElementType> second){

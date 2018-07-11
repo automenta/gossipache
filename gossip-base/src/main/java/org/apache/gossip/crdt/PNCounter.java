@@ -63,8 +63,8 @@ public class PNCounter implements CrdtCounter<Long, PNCounter> {
 
   @Override
   public Long value() {
-    long pValue = (long) pCount.value();
-    long nValue = (long) nCount.value();
+    long pValue = pCount.value();
+    long nValue = nCount.value();
     return pValue - nValue;
   }
 
@@ -83,7 +83,7 @@ public class PNCounter implements CrdtCounter<Long, PNCounter> {
 
   @Override
   public String toString() {
-    return "PnCounter [pCount=" + pCount + ", nCount=" + nCount + ", value=" + value() + "]";
+    return "PnCounter [pCount=" + pCount + ", nCount=" + nCount + ", value=" + value() + ']';
   }
 
   Map<String, Long> getPCounters() {

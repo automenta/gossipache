@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.log4j.Logger;
 
 
@@ -171,12 +172,13 @@ public class StartupSettings {
     JsonNode jsonObject = root.get(0);
     String uri = jsonObject.get("uri").textValue();
     String id = jsonObject.get("id").textValue();
-    Map<String,String> properties = new HashMap<String,String>();
-    JsonNode n = jsonObject.get("properties");
+//    Map<String,String> properties = new HashMap<String,String>();
+    ObjectNode n = (ObjectNode) jsonObject.get("properties");
     Iterator<Entry<String, JsonNode>> l = n.fields();
     while (l.hasNext()){
       Entry<String, JsonNode> i = l.next();
-      properties.put(i.getKey(), i.getValue().asText());
+      //properties.put(i.getKey(), i.getValue().asText());
+      n.put(i.getKey(), i.getValue().asText());
     }
     //TODO constants as defaults?
     // TODO setting keys as constants?
@@ -215,17 +217,15 @@ public class StartupSettings {
     StartupSettings settings = new StartupSettings(id, uri2, gossipSettings, cluster);
     String configMembersDetails = "Config-members [";
     JsonNode membersJSON = jsonObject.get("members");
-    Iterator<JsonNode> it = membersJSON.iterator();
-    while (it.hasNext()){
-      JsonNode child = it.next();
+    for (JsonNode child : membersJSON) {
       URI uri3 = new URI(child.get("uri").textValue());
       RemoteMember member = new RemoteMember(child.get("cluster").asText(),
-              uri3, "", 0, new HashMap<String,String>());
+              uri3, "", 0, new HashMap<>());
       settings.addGossipMember(member);
       configMembersDetails += member.computeAddress();
       configMembersDetails += ", ";
     }
-    log.info(configMembersDetails + "]");
+    log.info(configMembersDetails + ']');
     return settings;
   }
 }

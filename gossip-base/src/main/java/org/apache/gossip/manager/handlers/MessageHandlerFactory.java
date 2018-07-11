@@ -19,7 +19,10 @@
 package org.apache.gossip.manager.handlers;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.apache.gossip.manager.GossipCore;
 import org.apache.gossip.manager.GossipManager;
@@ -34,44 +37,40 @@ import org.apache.gossip.model.ShutdownMessage;
 
 public class MessageHandlerFactory {
 
-  public static MessageHandler defaultHandler() {
-    return concurrentHandler(
-        new TypedMessageHandler(Response.class, new ResponseHandler()),
-        new TypedMessageHandler(ShutdownMessage.class, new ShutdownMessageHandler()),
-        new TypedMessageHandler(PerNodeDataMessage.class, new PerNodeDataMessageHandler()),
-        new TypedMessageHandler(SharedDataMessage.class, new SharedDataMessageHandler()),
-        new TypedMessageHandler(ActiveGossipMessage.class, new ActiveGossipMessageHandler()),
-        new TypedMessageHandler(PerNodeDataBulkMessage.class, new PerNodeDataBulkMessageHandler()),
-        new TypedMessageHandler(SharedDataBulkMessage.class, new SharedDataBulkMessageHandler())
-    );
-  }
-
-  public static MessageHandler defaultHandler(Predicate<String> authenticator) {
-	    return concurrentHandler(
-	        new TypedMessageHandler(Response.class, new ResponseHandler()),
-	        new TypedMessageHandler(ShutdownMessage.class, new ShutdownMessageHandler()),
-	        new TypedMessageHandler(PerNodeDataMessage.class, new PerNodeDataMessageHandler(authenticator)),
-	        new TypedMessageHandler(SharedDataMessage.class, new SharedDataMessageHandler(authenticator)),
-	        new TypedMessageHandler(ActiveGossipMessage.class, new ActiveGossipMessageHandler(authenticator)),
-	        new TypedMessageHandler(PerNodeDataBulkMessage.class, new PerNodeDataBulkMessageHandler(authenticator)),
-	        new TypedMessageHandler(SharedDataBulkMessage.class, new SharedDataBulkMessageHandler(authenticator))
-	    );
-	  }
-
-  public static MessageHandler concurrentHandler(MessageHandler... handlers) {
-    if (handlers == null)
-      throw new NullPointerException("handlers cannot be null");
-    if (Arrays.asList(handlers).stream().filter(i -> i != null).count() != handlers.length) {
-      throw new NullPointerException("found at least one null handler");
+    public static MessageHandler defaultHandler() {
+        return concurrentHandler(
+                new TypedMessageHandler(Response.class, new ResponseHandler()),
+                new TypedMessageHandler(ShutdownMessage.class, new ShutdownMessageHandler()),
+                new TypedMessageHandler(PerNodeDataMessage.class, new PerNodeDataMessageHandler()),
+                new TypedMessageHandler(SharedDataMessage.class, new SharedDataMessageHandler()),
+                new TypedMessageHandler(ActiveGossipMessage.class, new ActiveGossipMessageHandler()),
+                new TypedMessageHandler(PerNodeDataBulkMessage.class, new PerNodeDataBulkMessageHandler()),
+                new TypedMessageHandler(SharedDataBulkMessage.class, new SharedDataBulkMessageHandler())
+        );
     }
-    return new MessageHandler() {
-      @Override public boolean invoke(GossipCore gossipCore, GossipManager gossipManager,
-              Base base) {
-        // return true if at least one of the component handlers return true.
-        return Arrays.asList(handlers).stream()
-                .filter((mi) -> mi.invoke(gossipCore, gossipManager, base)).count() > 0;
-      }
-    };
-  }
+
+    public static MessageHandler defaultHandler(Predicate<String> authenticator) {
+        return concurrentHandler(
+                new TypedMessageHandler(Response.class, new ResponseHandler()),
+                new TypedMessageHandler(ShutdownMessage.class, new ShutdownMessageHandler()),
+                new TypedMessageHandler(PerNodeDataMessage.class, new PerNodeDataMessageHandler(authenticator)),
+                new TypedMessageHandler(SharedDataMessage.class, new SharedDataMessageHandler(authenticator)),
+                new TypedMessageHandler(ActiveGossipMessage.class, new ActiveGossipMessageHandler(authenticator)),
+                new TypedMessageHandler(PerNodeDataBulkMessage.class, new PerNodeDataBulkMessageHandler(authenticator)),
+                new TypedMessageHandler(SharedDataBulkMessage.class, new SharedDataBulkMessageHandler(authenticator))
+        );
+    }
+
+    public static MessageHandler concurrentHandler(MessageHandler... handlers) {
+//        if (handlers == null)
+//            throw new NullPointerException("handlers cannot be null");
+//        if (Stream.of(handlers).filter(Objects::nonNull).count() != handlers.length) {
+//            throw new NullPointerException("found at least one null handler");
+//        }
+        return (gossipCore, gossipManager, base) -> {
+            // return true if at least one of the component handlers return true.
+            return Stream.of(handlers).anyMatch((mi) -> mi.invoke(gossipCore, gossipManager, base));
+        };
+    }
 }
 

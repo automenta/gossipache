@@ -47,14 +47,14 @@ public class UserDataPersister implements Runnable {
   @SuppressWarnings("unchecked")
   ConcurrentHashMap<String, ConcurrentHashMap<String, PerNodeDataMessage>> readPerNodeFromDisk(){
     if (!perNodePath.exists()) {
-      return new ConcurrentHashMap<String, ConcurrentHashMap<String, PerNodeDataMessage>>();
+      return new ConcurrentHashMap<>();
     }
     try (FileInputStream fos = new FileInputStream(perNodePath)){
       return objectMapper.readValue(fos, ConcurrentHashMap.class);
     } catch (IOException e) {
       LOGGER.warn(e);
     }
-    return new ConcurrentHashMap<String, ConcurrentHashMap<String, PerNodeDataMessage>>();
+    return new ConcurrentHashMap<>();
   }
   
   void writePerNodeToDisk(){
@@ -85,7 +85,7 @@ public class UserDataPersister implements Runnable {
     } catch (IOException e) {
       LOGGER.warn(e);
     }
-    return new ConcurrentHashMap<String, SharedDataMessage>();
+    return new ConcurrentHashMap<>();
   }
   
   /**

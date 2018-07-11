@@ -71,7 +71,7 @@ public class PerNodeDataMessage extends Base {
   public String toString() {
     return "GossipDataMessage [nodeId=" + nodeId + ", key=" + key + ", payload=" + payload
             + ", timestamp=" + timestamp + ", expireAt=" + expireAt
-            + ", replicable=" + replicable + "]";
+            + ", replicable=" + replicable + ']';
   }
 
   

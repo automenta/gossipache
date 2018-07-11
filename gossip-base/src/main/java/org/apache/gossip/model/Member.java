@@ -81,7 +81,7 @@ public class Member {
   @Override
   public String toString() {
     return "Member [cluster=" + cluster + ", uri=" + uri + ", id=" + id + ", heartbeat="
-            + heartbeat + ", properties=" + properties + "]";
+            + heartbeat + ", properties=" + properties + ']';
   }
   
 }

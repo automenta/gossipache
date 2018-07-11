@@ -17,7 +17,6 @@
  */
 package org.apache.gossip.model;
 
-import org.apache.gossip.replication.AllReplicable;
 import org.apache.gossip.replication.Replicable;
 
 public class SharedDataMessage extends Base {
@@ -72,7 +71,7 @@ public class SharedDataMessage extends Base {
   public String toString() {
     return "SharedGossipDataMessage [nodeId=" + nodeId + ", key=" + key + ", payload=" + payload
             + ", timestamp=" + timestamp + ", expireAt=" + expireAt
-            + ", replicable=" + replicable + "]";
+            + ", replicable=" + replicable + ']';
   }
 }
 

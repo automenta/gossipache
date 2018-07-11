@@ -80,7 +80,7 @@ public abstract class Member implements Comparable<Member> {
    * {@link InetSocketAddress}
    */
   public String computeAddress() {
-    return uri.getHost() + ":" + uri.getPort();
+    return uri.getHost() + ':' + uri.getPort();
   }
 
   /**
@@ -119,7 +119,7 @@ public abstract class Member implements Comparable<Member> {
   }
 
   public String toString() {
-    return "Member [address=" + computeAddress() + ", id=" + id + ", heartbeat=" + heartbeat + "]";
+    return "Member [address=" + computeAddress() + ", id=" + id + ", heartbeat=" + heartbeat + ']';
   }
 
   /**
@@ -156,8 +156,8 @@ public abstract class Member implements Comparable<Member> {
       return false;
     }
     // The object is the same of they both have the same address (hostname and port).
-    return computeAddress().equals(((LocalMember) obj).computeAddress())
-            && getClusterName().equals(((LocalMember) obj).getClusterName());
+    return computeAddress().equals(((Member) obj).computeAddress())
+            && getClusterName().equals(((Member) obj).getClusterName());
   }
 
   public int compareTo(Member other) {

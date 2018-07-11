@@ -25,30 +25,24 @@ public class CrdtBiFunctionMerge implements BiFunction<Crdt,Crdt,Crdt> {
   @SuppressWarnings("unchecked")
   @Override
   public Crdt apply(Crdt t, Crdt u) {
-    if (t == null && u == null){
-      return null;
-    } else if (t == null){
-      return u;
-    } else if (u == null){
-      return t;
-    }
-    if (! u.getClass().equals(t.getClass())){
-      throw new IllegalArgumentException( "Can not merge " + t.getClass() + " "+ u.getClass());
-    }
-    return t.merge(u);
+    return getCrdt(t, u);
   }
 
   @SuppressWarnings("unchecked")
   public static Crdt applyStatic(Crdt t, Crdt u){
-    if (t == null && u == null){
+    return getCrdt(t, u);
+  }
+
+  private static Crdt getCrdt(Crdt t, Crdt u) {
+    if (t == null && u == null) {
       return null;
-    } else if (t == null){
+    } else if (t == null) {
       return u;
-    } else if (u == null){
+    } else if (u == null) {
       return t;
     }
-    if (! u.getClass().equals(t.getClass())){
-      throw new IllegalArgumentException( "Can not merge " + t.getClass() + " "+ u.getClass());
+    if (!u.getClass().equals(t.getClass())) {
+      throw new IllegalArgumentException("Can not merge " + t.getClass() + " " + u.getClass());
     }
     return t.merge(u);
   }

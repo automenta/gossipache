@@ -50,7 +50,7 @@ public class MaxChangeSet<ElementType> implements CrdtAddRemoveSet<ElementType, 
   }
 
   public MaxChangeSet(Set<ElementType> set){
-    struct = new HashMap<>();
+    struct = new HashMap<>(set.size());
     for (ElementType e : set){
       struct.put(e, 1);
     }
@@ -73,20 +73,21 @@ public class MaxChangeSet<ElementType> implements CrdtAddRemoveSet<ElementType, 
   }
 
   private MaxChangeSet<ElementType> increment(ElementType e){
-    Map<ElementType, Integer> changeMap = new HashMap<>();
-    changeMap.put(e, struct.getOrDefault(e, 0) + 1);
+    //Map<ElementType, Integer> changeMap = new HashMap<>();
+    //changeMap.put(e, struct.getOrDefault(e, 0) + 1);
+    Map<ElementType, Integer> changeMap = Map.of(e, struct.getOrDefault(e, 0) + 1);
     return this.merge(new MaxChangeSet<>(changeMap));
   }
 
   public MaxChangeSet<ElementType> add(ElementType e){
-    if (struct.getOrDefault(e, 0) % 2 == 1){
+    if ((struct.getOrDefault(e, 0) & 1) == 1){
       return this;
     }
     return increment(e);
   }
 
   public MaxChangeSet<ElementType> remove(ElementType e){
-    if (struct.getOrDefault(e, 0) % 2 == 0){
+    if ((struct.getOrDefault(e, 0) & 1) == 0){
       return this;
     }
     return increment(e);

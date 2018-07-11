@@ -22,7 +22,7 @@ public enum GossipState {
   @SuppressWarnings("unused")
   private final String state;
 
-  private GossipState(String state) {
+  GossipState(String state) {
     this.state = state;
   }
 }

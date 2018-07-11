@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * VoteSelector implementation which randomly select a voting node.
@@ -30,6 +31,6 @@ public class RandomVoteSelector implements VoteSelector {
   @Override
   public String getVoteCandidateId(Set<String> voteCandidateIds) {
     List<String> voteCandidatesIds = new ArrayList<>(voteCandidateIds);
-    return voteCandidatesIds.get(new Random().nextInt(voteCandidatesIds.size()));
+    return voteCandidatesIds.get(ThreadLocalRandom.current().nextInt(voteCandidatesIds.size()));
   }
 }

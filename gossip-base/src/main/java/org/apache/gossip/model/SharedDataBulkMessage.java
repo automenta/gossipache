@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class SharedDataBulkMessage extends Base {
-  private List<SharedDataMessage> messages = new ArrayList<>();
+  private final List<SharedDataMessage> messages = new ArrayList<>();
 
   public void addMessage(SharedDataMessage msg) {
     messages.add(msg);
@@ -34,6 +34,6 @@ public class SharedDataBulkMessage extends Base {
 
   @Override public String toString() {
     return "SharedGossipDataBulkMessage[" + messages.stream().map(Object::toString)
-            .collect(Collectors.joining(",")) + "]";
+            .collect(Collectors.joining(",")) + ']';
   }
 }

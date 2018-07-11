@@ -54,13 +54,13 @@ public class DataEventManager {
             sharedDataHandlerQueue, new ThreadPoolExecutor.DiscardOldestPolicy());
     
     metrics.register(DataEventConstants.PER_NODE_DATA_SUBSCRIBERS_SIZE,
-            (Gauge<Integer>) () -> perNodeDataHandlers.size());
+            (Gauge<Integer>) perNodeDataHandlers::size);
     metrics.register(DataEventConstants.PER_NODE_DATA_SUBSCRIBERS_QUEUE_SIZE,
-            (Gauge<Integer>) () -> perNodeDataHandlerQueue.size());
+            (Gauge<Integer>) perNodeDataHandlerQueue::size);
     metrics.register(DataEventConstants.SHARED_DATA_SUBSCRIBERS_SIZE,
-            (Gauge<Integer>) () -> sharedDataHandlers.size());
+            (Gauge<Integer>) sharedDataHandlers::size);
     metrics.register(DataEventConstants.SHARED_DATA_SUBSCRIBERS_QUEUE_SIZE,
-            (Gauge<Integer>) () -> sharedDataHandlerQueue.size());
+            (Gauge<Integer>) sharedDataHandlerQueue::size);
     
   }
   

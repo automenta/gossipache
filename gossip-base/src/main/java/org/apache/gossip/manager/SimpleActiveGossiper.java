@@ -35,15 +35,15 @@ import com.codahale.metrics.MetricRegistry;
  */
 public class SimpleActiveGossiper extends AbstractActiveGossiper {
 
-  private ScheduledExecutorService scheduledExecutorService;
+  private final ScheduledExecutorService scheduledExecutorService;
   private final BlockingQueue<Runnable> workQueue;
-  private ThreadPoolExecutor threadService;
+  private final ThreadPoolExecutor threadService;
   
   public SimpleActiveGossiper(GossipManager gossipManager, GossipCore gossipCore,
                               MetricRegistry registry) {
     super(gossipManager, gossipCore, registry);
     scheduledExecutorService = Executors.newScheduledThreadPool(2);
-    workQueue = new ArrayBlockingQueue<Runnable>(1024);
+    workQueue = new ArrayBlockingQueue<>(1024);
     threadService = new ThreadPoolExecutor(1, 30, 1, TimeUnit.SECONDS, workQueue,
             new ThreadPoolExecutor.DiscardOldestPolicy());
   }
@@ -51,14 +51,8 @@ public class SimpleActiveGossiper extends AbstractActiveGossiper {
   @Override
   public void init() {
     super.init();
-    scheduledExecutorService.scheduleAtFixedRate(() -> {
-      threadService.execute(() -> {
-        sendToALiveMember();
-      });
-    }, 0, gossipManager.getSettings().getGossipInterval(), TimeUnit.MILLISECONDS);
-    scheduledExecutorService.scheduleAtFixedRate(() -> {
-      sendToDeadMember();
-    }, 0, gossipManager.getSettings().getGossipInterval(), TimeUnit.MILLISECONDS);
+    scheduledExecutorService.scheduleAtFixedRate(() -> threadService.execute(this::sendToALiveMember), 0, gossipManager.getSettings().getGossipInterval(), TimeUnit.MILLISECONDS);
+    scheduledExecutorService.scheduleAtFixedRate(this::sendToDeadMember, 0, gossipManager.getSettings().getGossipInterval(), TimeUnit.MILLISECONDS);
     scheduledExecutorService.scheduleAtFixedRate(
             () -> sendPerNodeData(gossipManager.getMyself(),
                     selectPartner(gossipManager.getLiveMembers())),

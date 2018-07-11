@@ -48,15 +48,15 @@ public class DatacenterRackAwareActiveGossiper extends AbstractActiveGossiper {
   private int differentDatacenterGossipIntervalMs = 1000;
   private int randomDeadMemberSendIntervalMs = 250;
   
-  private ScheduledExecutorService scheduledExecutorService;
+  private final ScheduledExecutorService scheduledExecutorService;
   private final BlockingQueue<Runnable> workQueue;
-  private ThreadPoolExecutor threadService;
+  private final ThreadPoolExecutor threadService;
   
   public DatacenterRackAwareActiveGossiper(GossipManager gossipManager, GossipCore gossipCore,
           MetricRegistry registry) {
     super(gossipManager, gossipCore, registry);
     scheduledExecutorService = Executors.newScheduledThreadPool(2);
-    workQueue = new ArrayBlockingQueue<Runnable>(1024);
+    workQueue = new ArrayBlockingQueue<>(1024);
     threadService = new ThreadPoolExecutor(1, 30, 1, TimeUnit.SECONDS, workQueue,
             new ThreadPoolExecutor.DiscardOldestPolicy());
     try {
@@ -82,46 +82,46 @@ public class DatacenterRackAwareActiveGossiper extends AbstractActiveGossiper {
     super.init();
     //same rack
     scheduledExecutorService.scheduleAtFixedRate(() -> 
-      threadService.execute(() -> sendToSameRackMember()), 
+      threadService.execute(this::sendToSameRackMember),
       0, sameRackGossipIntervalMs, TimeUnit.MILLISECONDS);
     
     scheduledExecutorService.scheduleAtFixedRate(() -> 
-      threadService.execute(() -> sendToSameRackMemberPerNode()), 
+      threadService.execute(this::sendToSameRackMemberPerNode),
       0, sameRackGossipIntervalMs, TimeUnit.MILLISECONDS);
     
     scheduledExecutorService.scheduleAtFixedRate(() -> 
-      threadService.execute(() -> sendToSameRackShared()), 
+      threadService.execute(this::sendToSameRackShared),
       0, sameRackGossipIntervalMs, TimeUnit.MILLISECONDS);
     
     //same dc different rack
     scheduledExecutorService.scheduleAtFixedRate(() -> 
-      threadService.execute(() -> sameDcDiffernetRackMember()), 
+      threadService.execute(this::sameDcDiffernetRackMember),
       0, sameDcGossipIntervalMs, TimeUnit.MILLISECONDS);
     
     scheduledExecutorService.scheduleAtFixedRate(() -> 
-    threadService.execute(() -> sameDcDiffernetRackPerNode()), 
+    threadService.execute(this::sameDcDiffernetRackPerNode),
     0, sameDcGossipIntervalMs, TimeUnit.MILLISECONDS);
     
     scheduledExecutorService.scheduleAtFixedRate(() -> 
-    threadService.execute(() -> sameDcDiffernetRackShared()), 
+    threadService.execute(this::sameDcDiffernetRackShared),
     0, sameDcGossipIntervalMs, TimeUnit.MILLISECONDS);
     
     //different dc
     scheduledExecutorService.scheduleAtFixedRate(() -> 
-      threadService.execute(() -> differentDcMember()), 
+      threadService.execute(this::differentDcMember),
       0, differentDatacenterGossipIntervalMs, TimeUnit.MILLISECONDS);
     
     scheduledExecutorService.scheduleAtFixedRate(() -> 
-    threadService.execute(() -> differentDcPerNode()), 
+    threadService.execute(this::differentDcPerNode),
     0, differentDatacenterGossipIntervalMs, TimeUnit.MILLISECONDS);
   
     scheduledExecutorService.scheduleAtFixedRate(() -> 
-    threadService.execute(() -> differentDcShared()), 
+    threadService.execute(this::differentDcShared),
     0, differentDatacenterGossipIntervalMs, TimeUnit.MILLISECONDS);
     
     //the dead
     scheduledExecutorService.scheduleAtFixedRate(() -> 
-      threadService.execute(() -> sendToDeadMember()), 
+      threadService.execute(this::sendToDeadMember),
       0, randomDeadMemberSendIntervalMs, TimeUnit.MILLISECONDS);
     
   }
@@ -136,7 +136,7 @@ public class DatacenterRackAwareActiveGossiper extends AbstractActiveGossiper {
     if (myDc == null|| rack == null){
       return Collections.emptyList();
     }
-    List<LocalMember> notMyDc = new ArrayList<LocalMember>(10);
+    List<LocalMember> notMyDc = new ArrayList<>(10);
     for (LocalMember i : gossipManager.getLiveMembers()){
       if (!myDc.equals(i.getProperties().get(DATACENTER))){
         notMyDc.add(i);
@@ -151,7 +151,7 @@ public class DatacenterRackAwareActiveGossiper extends AbstractActiveGossiper {
     if (myDc == null|| rack == null){
       return Collections.emptyList();
     }
-    List<LocalMember> notMyDc = new ArrayList<LocalMember>(10);
+    List<LocalMember> notMyDc = new ArrayList<>(10);
     for (LocalMember i : gossipManager.getLiveMembers()){
       if (myDc.equals(i.getProperties().get(DATACENTER)) && !rack.equals(i.getProperties().get(RACK))){
         notMyDc.add(i);
@@ -166,7 +166,7 @@ public class DatacenterRackAwareActiveGossiper extends AbstractActiveGossiper {
     if (myDc == null|| rack == null){
       return Collections.emptyList();
     }
-    List<LocalMember> sameDcAndRack = new ArrayList<LocalMember>(10);
+    List<LocalMember> sameDcAndRack = new ArrayList<>(10);
     for (LocalMember i : gossipManager.getLiveMembers()){
       if (myDc.equals(i.getProperties().get(DATACENTER))
               && rack.equals(i.getProperties().get(RACK))){

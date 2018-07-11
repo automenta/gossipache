@@ -36,11 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -190,7 +186,7 @@ public class LockManager {
   }
 
   // Return true if every node has a vote from given node id.
-  private boolean isVotedToAll(String nodeId, final Map<String, VoteCandidate> voteCandidates) {
+  private static boolean isVotedToAll(String nodeId, final Map<String, VoteCandidate> voteCandidates) {
     int voteCount = 0;
     for (VoteCandidate voteCandidate : voteCandidates.values()) {
       if (voteCandidate.getVotes().containsKey(nodeId)) {
@@ -229,11 +225,11 @@ public class LockManager {
     // Set of nodes that is going to receive this nodes votes
     List<String> donateCandidateIds = voteCandidates.keySet().stream()
             .filter(s -> s.compareTo(myNodeId) < 0).collect(Collectors.toList());
-    if (donateCandidateIds.size() == 0) {
+    if (donateCandidateIds.isEmpty()) {
       return;
     }
     // Select a random node to donate
-    Random randomizer = new Random();
+    Random randomizer = ThreadLocalRandom.current(); //new Random();
     String selectedCandidateId = donateCandidateIds
             .get(randomizer.nextInt(donateCandidateIds.size()));
     VoteCandidate selectedCandidate = voteCandidates.get(selectedCandidateId);
@@ -256,8 +252,8 @@ public class LockManager {
     }
   }
 
-  private String getVotedCandidateNodeId(String nodeId,
-          final Map<String, VoteCandidate> voteCandidates) {
+  private static String getVotedCandidateNodeId(String nodeId,
+                                                final Map<String, VoteCandidate> voteCandidates) {
     for (VoteCandidate voteCandidate : voteCandidates.values()) {
       Vote vote = voteCandidate.getVotes().get(nodeId);
       if (vote != null && vote.getVoteValue()) {
@@ -286,7 +282,7 @@ public class LockManager {
     return numberOfLiveNodes > 0 && voteCount >= (numberOfLiveNodes / 2 + 1);
   }
 
-  private String generateLockKey(String key){
+  private static String generateLockKey(String key){
     return "lock/" + key;
   }
 

@@ -45,7 +45,7 @@ public class ShutdownMessage extends Message {
 
   @Override
   public String toString() {
-    return "ShutdownMessage [shutdownAtNanos=" + shutdownAtNanos + ", nodeId=" + nodeId + "]";
+    return "ShutdownMessage [shutdownAtNanos=" + shutdownAtNanos + ", nodeId=" + nodeId + ']';
   }
   
 }

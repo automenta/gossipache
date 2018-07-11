@@ -35,285 +35,292 @@ import org.apache.gossip.crdt.OrSet.Builder.Operation;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /*
- * A immutable set 
+ * A immutable set
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OrSet<E>  implements CrdtAddRemoveSet<E, Set<E>, OrSet<E>> {
-  
-  private final Map<E, Set<UUID>> elements = new HashMap<>();
-  private final Map<E, Set<UUID>> tombstones = new HashMap<>();
-  private final transient Set<E> val;
-  
-  public OrSet(){
-    val = computeValue();
-  }
-  
-  OrSet(Map<E, Set<UUID>> elements, Map<E, Set<UUID>> tombstones){
-    this.elements.putAll(elements);
-    this.tombstones.putAll(tombstones);
-    val = computeValue();
-  }
-  
-  @SafeVarargs
-  public OrSet(E ... elements){
-    this(new HashSet<>(Arrays.asList(elements)));
-  }
+public class OrSet<E> implements CrdtAddRemoveSet<E, Set<E>, OrSet<E>> {
 
-  public OrSet(Set<E> elements) {
-    for (E e: elements){
-      internalAdd(e);
-    }
-    val = computeValue();
-  }
-  
-  public OrSet(Builder<E>builder){
-    for (Builder<E>.OrSetElement<E> e: builder.elements){
-      if (e.operation == Operation.ADD){
-        internalAdd(e.element);
-      } else {
-        internalRemove(e.element);
-      }
-    }
-    val = computeValue();
-  }
-  
-  /**
-   * This constructor is the way to remove elements from an existing set
-   * @param set
-   * @param builder 
-   */
-  public OrSet(OrSet<E> set, Builder<E> builder){
-    elements.putAll(set.elements);
-    tombstones.putAll(set.tombstones);
-    for (Builder<E>.OrSetElement<E> e: builder.elements){
-      if (e.operation == Operation.ADD){
-        internalAdd(e.element);
-      } else {
-        internalRemove(e.element);
-      }
-    }
-    val = computeValue();
-  }
+    private final Map<E, Set<UUID>> elements = new HashMap<>();
+    private final Map<E, Set<UUID>> tombstones = new HashMap<>();
+    private final transient Set<E> val;
 
-  static Set<UUID> mergeSets(Set<UUID> a, Set<UUID> b) {
-    if ((a == null || a.isEmpty()) && (b == null || b.isEmpty())) {
-      return null;
-    }
-    Set<UUID> res = new HashSet<>(a);
-    res.addAll(b);
-    return res;
-  }
-
-  private void internalSetMerge(Map<E, Set<UUID>> map, E key, Set<UUID> value) {
-    if (value == null) {
-      return;
-    }
-    map.merge(key, value, OrSet::mergeSets);
-  }
-
-  public OrSet(OrSet<E> left, OrSet<E> right){
-    BiConsumer<Map<E, Set<UUID>>, Map<E, Set<UUID>>> internalMerge = (items, other) -> {
-      for (Entry<E, Set<UUID>> l : other.entrySet()){
-        internalSetMerge(items, l.getKey(), l.getValue());
-      }
-    };
-
-    internalMerge.accept(elements, left.elements);
-    internalMerge.accept(elements, right.elements);
-    internalMerge.accept(tombstones, left.tombstones);
-    internalMerge.accept(tombstones, right.tombstones);
-
-    val = computeValue();
-  }
-
-  public OrSet<E> add(E e) {
-    return this.merge(new OrSet<>(e));
-  }
-
-  public OrSet<E> remove(E e) {
-    return new OrSet<>(this, new Builder<E>().remove(e));
-  }
-
-  public OrSet.Builder<E> builder(){
-    return new OrSet.Builder<>();
-  }
-  
-  @Override
-  public OrSet<E> merge(OrSet<E> other) {
-    return new OrSet<E>(this, other);
-  }
-  
-  private void internalAdd(E element) {
-    Set<UUID> toMerge = new HashSet<>();
-    toMerge.add(UUID.randomUUID());
-    internalSetMerge(elements, element, toMerge);
-  }
-  
-  private void internalRemove(E element){
-    internalSetMerge(tombstones, element, elements.get(element));
-  }
-
-  /*
-   * Computes the live values by analyzing the elements and tombstones
-   */
-  private Set<E> computeValue(){
-    Set<E> values = new HashSet<>();
-    for (Entry<E, Set<UUID>> entry: elements.entrySet()){
-      Set<UUID> deleteIds = tombstones.get(entry.getKey());
-      // if not all tokens for current element are in tombstones
-      if (deleteIds == null || !deleteIds.containsAll(entry.getValue())) {
-        values.add(entry.getKey());
-      }
-    }
-    return values;
-  }
-  
-  @Override
-  public Set<E> value() {
-    return val;
-  }
-
-  @Override
-  public OrSet<E> optimize() {
-    return this;
-  }
-  
-  public static class Builder<E> {
-    public static enum Operation {
-      ADD, REMOVE
-    };
-
-    private class OrSetElement<EL> {
-      EL element;
-      Operation operation;
-
-      private OrSetElement(EL element, Operation operation) {
-        this.element = element;
-        this.operation = operation;
-      }
+    public OrSet() {
+        val = computeValue();
     }
 
-    private List<OrSetElement<E>> elements = new ArrayList<>();
-
-    public Builder<E> add(E element) {
-      elements.add(new OrSetElement<E>(element, Operation.ADD));
-      return this;
+    OrSet(Map<E, Set<UUID>> elements, Map<E, Set<UUID>> tombstones) {
+        this.elements.putAll(elements);
+        this.tombstones.putAll(tombstones);
+        val = computeValue();
     }
 
-    public Builder<E> remove(E element) {
-      elements.add(new OrSetElement<E>(element, Operation.REMOVE));
-      return this;
+    @SafeVarargs
+    public OrSet(E... elements) {
+        this(new HashSet<>(Arrays.asList(elements)));
     }
 
-    public Builder<E> mutate(E element, Operation operation) {
-      elements.add(new OrSetElement<E>(element, operation));
-      return this;
+    public OrSet(Set<E> elements) {
+        for (E e : elements) {
+            internalAdd(e);
+        }
+        val = computeValue();
     }
-  }
 
-  
-  public int size() {
-    return value().size();
-  }
+    public OrSet(Builder<E> builder) {
+        for (Builder.OrSetElement<E> e : builder.elements) {
+            if (e.operation == Operation.ADD) {
+                internalAdd(e.element);
+            } else {
+                internalRemove(e.element);
+            }
+        }
+        val = computeValue();
+    }
 
-  
-  public boolean isEmpty() {
-    return value().size() == 0;
-  }
+    /**
+     * This constructor is the way to remove elements from an existing set
+     *
+     * @param set
+     * @param builder
+     */
+    public OrSet(OrSet<E> set, Builder<E> builder) {
+        elements.putAll(set.elements);
+        tombstones.putAll(set.tombstones);
+        for (Builder.OrSetElement<E> e : builder.elements) {
+            if (e.operation == Operation.ADD) {
+                internalAdd(e.element);
+            } else {
+                internalRemove(e.element);
+            }
+        }
+        val = computeValue();
+    }
 
-  
-  public boolean contains(Object o) {
-    return value().contains(o);
-  }
+    static Set<UUID> mergeSets(Set<UUID> a, Set<UUID> b) {
+//    if ((a == null || a.isEmpty()) && (b == null || b.isEmpty())) {
+//      return null;
+//    }
+        if (a.equals(b))
+            return a;
 
-  
-  public Iterator<E> iterator() {
-    Iterator<E> managed = value().iterator();
-    return new Iterator<E>() {
+        Set<UUID> res = new HashSet<>(a);
+        if (!res.addAll(b))
+            return a; //b is subset of a
 
-      @Override
-      public void remove() {
+        return res;
+    }
+
+    private void internalSetMerge(Map<E, Set<UUID>> map, E key, Set<UUID> value) {
+        if (value == null) {
+            return;
+        }
+        map.merge(key, value, OrSet::mergeSets);
+    }
+
+    public OrSet(OrSet<E> left, OrSet<E> right) {
+        BiConsumer<Map<E, Set<UUID>>, Map<E, Set<UUID>>> internalMerge = (items, other) -> {
+            for (Entry<E, Set<UUID>> l : other.entrySet()) {
+                internalSetMerge(items, l.getKey(), l.getValue());
+            }
+        };
+
+        internalMerge.accept(elements, left.elements);
+        internalMerge.accept(elements, right.elements);
+        internalMerge.accept(tombstones, left.tombstones);
+        internalMerge.accept(tombstones, right.tombstones);
+
+        val = computeValue();
+    }
+
+    public OrSet<E> add(E e) {
+        return this.merge(new OrSet<>(e));
+    }
+
+    public OrSet<E> remove(E e) {
+        return new OrSet<>(this, new Builder<E>().remove(e));
+    }
+
+    public OrSet.Builder<E> builder() {
+        return new OrSet.Builder<>();
+    }
+
+    @Override
+    public OrSet<E> merge(OrSet<E> other) {
+        return new OrSet<>(this, other);
+    }
+
+    private void internalAdd(E element) {
+        Set<UUID> toMerge = new HashSet<>();
+        toMerge.add(UUID.randomUUID());
+        internalSetMerge(elements, element, toMerge);
+    }
+
+    private void internalRemove(E element) {
+        internalSetMerge(tombstones, element, elements.get(element));
+    }
+
+    /*
+     * Computes the live values by analyzing the elements and tombstones
+     */
+    private Set<E> computeValue() {
+        Set<E> values = new HashSet<>();
+        for (Entry<E, Set<UUID>> entry : elements.entrySet()) {
+            E k = entry.getKey();
+            Set<UUID> deleteIds = tombstones.get(k);
+            // if not all tokens for current element are in tombstones
+            if (deleteIds == null || !deleteIds.containsAll(entry.getValue())) {
+                values.add(k);
+            }
+        }
+        return values;
+    }
+
+    @Override
+    public Set<E> value() {
+        return val;
+    }
+
+    @Override
+    public OrSet<E> optimize() {
+        return this;
+    }
+
+    public static class Builder<E> {
+        public enum Operation {
+            ADD, REMOVE
+        }
+
+        private static final class OrSetElement<EL> {
+            final EL element;
+            final Operation operation;
+
+            private OrSetElement(EL element, Operation operation) {
+                this.element = element;
+                this.operation = operation;
+            }
+        }
+
+        private final List<OrSetElement<E>> elements = new ArrayList<>();
+
+        public Builder<E> add(E element) {
+            elements.add(new OrSetElement<>(element, Operation.ADD));
+            return this;
+        }
+
+        public Builder<E> remove(E element) {
+            elements.add(new OrSetElement<>(element, Operation.REMOVE));
+            return this;
+        }
+
+        public Builder<E> mutate(E element, Operation operation) {
+            elements.add(new OrSetElement<>(element, operation));
+            return this;
+        }
+    }
+
+
+    public int size() {
+        return value().size();
+    }
+
+
+    public boolean isEmpty() {
+        return value().isEmpty();
+    }
+
+
+    public boolean contains(Object o) {
+        return value().contains(o);
+    }
+
+
+    public Iterator<E> iterator() {
+        Iterator<E> managed = value().iterator();
+        return new Iterator<E>() {
+
+            @Override
+            public void remove() {
+                throw new IllegalArgumentException();
+            }
+
+            @Override
+            public boolean hasNext() {
+                return managed.hasNext();
+            }
+
+            @Override
+            public E next() {
+                return managed.next();
+            }
+
+        };
+    }
+
+    public Object[] toArray() {
+        return value().toArray();
+    }
+
+    public <T> T[] toArray(T[] a) {
+        return value().toArray(a);
+    }
+
+    public boolean containsAll(Collection<?> c) {
+        return this.value().containsAll(c);
+    }
+
+    public boolean addAll(Collection<? extends E> c) {
         throw new IllegalArgumentException();
-      }
+    }
 
-      @Override
-      public boolean hasNext() {
-        return managed.hasNext();
-      }
+    public static boolean retainAll(Collection<?> c) {
+        throw new IllegalArgumentException();
+    }
 
-      @Override
-      public E next() {
-        return managed.next();
-      }
-      
-    };
-  }
+    public static boolean removeAll(Collection<?> c) {
+        throw new IllegalArgumentException();
+    }
 
-  public Object[] toArray() {
-    return value().toArray();
-  }
+    public static void clear() {
+        throw new IllegalArgumentException();
+    }
 
-  public <T> T[] toArray(T[] a) {
-    return value().toArray(a);
-  }
+    @Override
+    public String toString() {
+        return "OrSet [elements=" + elements + ", tombstones=" + tombstones + ']';
+    }
 
-  public boolean containsAll(Collection<?> c) {
-    return this.value().containsAll(c);
-  }
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((value() == null) ? 0 : value().hashCode());
+        return result;
+    }
 
-  public boolean addAll(Collection<? extends E> c) {
-    throw new IllegalArgumentException();
-  }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        @SuppressWarnings("rawtypes")
+        OrSet other = (OrSet) obj;
+        if (elements == null) {
+            if (other.elements != null)
+                return false;
+        } else if (!value().equals(other.value()))
+            return false;
+        return true;
+    }
 
-  public boolean retainAll(Collection<?> c) {
-    throw new IllegalArgumentException();
-  }
+    Map<E, Set<UUID>> getElements() {
+        return elements;
+    }
 
-  public boolean removeAll(Collection<?> c) {
-    throw new IllegalArgumentException();
-  }
-
-  public void clear() {
-    throw new IllegalArgumentException();
-  }
-
-  @Override
-  public String toString() {
-    return "OrSet [elements=" + elements + ", tombstones=" + tombstones + "]" ;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((value() == null) ? 0 : value().hashCode());
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    @SuppressWarnings("rawtypes")
-    OrSet other = (OrSet) obj;
-    if (elements == null) {
-      if (other.elements != null)
-        return false;
-    } else if (!value().equals(other.value()))
-      return false;
-    return true;
-  }
-
-  Map<E, Set<UUID>> getElements() {
-    return elements;
-  }
-
-  Map<E, Set<UUID>> getTombstones() {
-    return tombstones;
-  }
+    Map<E, Set<UUID>> getTombstones() {
+        return tombstones;
+    }
 
 }

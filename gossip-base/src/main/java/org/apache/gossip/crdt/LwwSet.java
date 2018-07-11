@@ -45,7 +45,7 @@ import java.util.stream.Stream;
 */
 
 public class LwwSet<ElementType> implements CrdtAddRemoveSet<ElementType, Set<ElementType>, LwwSet<ElementType>> {
-  static private Clock clock = new SystemClock();
+  static private final Clock clock = new SystemClock();
 
   private final Map<ElementType, Timestamps> struct;
 

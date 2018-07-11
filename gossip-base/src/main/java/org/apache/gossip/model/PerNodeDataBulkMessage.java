@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class PerNodeDataBulkMessage extends Base {
-  private List<PerNodeDataMessage> messages = new ArrayList<>();
+  private final List<PerNodeDataMessage> messages = new ArrayList<>();
 
   public void addMessage(PerNodeDataMessage msg) {
     messages.add(msg);
@@ -34,6 +34,6 @@ public class PerNodeDataBulkMessage extends Base {
 
   @Override public String toString() {
     return "GossipDataBulkMessage[" + messages.stream().map(Object::toString)
-            .collect(Collectors.joining(",")) + "]";
+            .collect(Collectors.joining(",")) + ']';
   }
 }

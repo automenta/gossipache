@@ -53,7 +53,7 @@ public class GossipManagerBuilder {
 
     private ManagerBuilder() {}
 
-    private void checkArgument(boolean check, String msg) {
+    private static void checkArgument(boolean check, String msg) {
       if (!check) {
         throw new IllegalArgumentException(msg);
       }
@@ -122,7 +122,7 @@ public class GossipManagerBuilder {
         registry = new MetricRegistry();
       }
       if (properties == null){
-        properties = new HashMap<String,String>();
+        properties = new HashMap<>();
       }
       if (listener == null){
         listener((a,b) -> {});

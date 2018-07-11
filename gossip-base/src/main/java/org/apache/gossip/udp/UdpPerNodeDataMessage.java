@@ -43,7 +43,7 @@ public class UdpPerNodeDataMessage extends PerNodeDataMessage implements Trackab
   @Override
   public String toString() {
     return "UdpGossipDataMessage [uriFrom=" + uriFrom + ", uuid=" + uuid
-            + ", getReplicable()=" + getReplicable() + "]";
+            + ", getReplicable()=" + getReplicable() + ']';
   }
 
 }
